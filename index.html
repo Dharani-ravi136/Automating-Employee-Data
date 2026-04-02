@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMS — Employee Data Management System</title>
+
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+<div id="toast-container"></div>
+
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-icon">🗑️</div>
+    <h3>Delete Employee?</h3>
+    <p>
+      You are about to permanently remove
+      <strong id="modal-emp-name"></strong>.
+      This action cannot be undone.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost"   id="modal-cancel-btn">Cancel</button>
+      <button class="btn btn-danger"  id="modal-confirm-btn">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="login-page" class="login-page">
+
+  <!-- Left — brand panel -->
+  <div class="login-left">
+    <div class="login-grid"></div>
+
+    <div class="login-logo">
+      <div class="sb-logo">👥</div>
+      <span class="login-logo-name">EMS Portal</span>
+    </div>
+
+    <div class="login-hero">
+      <h1>
+        Smarter <em>HR</em>,<br>
+        less paperwork.
+      </h1>
+      <p>
+        A centralised system to store, validate, and manage all employee
+        records — from onboarding to offboarding — with real-time search,
+        instant CRUD, and smart automation built in.
+      </p>
+    </div>
+
+    <div class="login-chips">
+      <div class="login-chip"><span class="chip-pulse"></span> Live search &amp; filter</div>
+      <div class="login-chip"><span class="chip-pulse"></span> Duplicate email prevention</div>
+      <div class="login-chip"><span class="chip-pulse"></span> Auto timestamps</div>
+    </div>
+  </div>
+
+  
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <h2>Welcome back 👋</h2>
+      <p class="login-subtitle">Sign in to access your HR dashboard</p>
+
+      
+      <div class="login-error hidden" id="login-error">
+        ❌ <span>Invalid credentials</span>
+      </div>
+
+      <!-- Login form fields -->
+      <div class="form-group" style="margin-bottom:16px;">
+        <label for="login-username">Username <span class="req">*</span></label>
+        <input
+          type="text"
+          id="login-username"
+          class="form-control"
+          placeholder="e.g. admin"
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group" style="margin-bottom:26px;">
+        <label for="login-password">Password <span class="req">*</span></label>
+        <input
+          type="password"
+          id="login-password"
+          class="form-control"
+          placeholder="Your password"
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button
+        class="btn btn-primary"
+        id="login-btn"
+        onclick="Auth.login()"
+        style="width:100%;justify-content:center;padding:11px;font-size:15px;"
+      >
+        🔐 Sign In
+      </button>
+
+      <!-- Demo credential hint -->
+      <div class="login-hint">
+        Demo credentials &nbsp;·&nbsp;
+        Username: <strong>admin</strong> &nbsp;·&nbsp;
+        Password: <strong>admin123</strong>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /#login-page -->
+
+<!-- ════════════════════════════════════════════════════════════
+     ██ APP SHELL  (sidebar + main)
+     ════════════════════════════════════════════════════════════ -->
+<div id="app-page" class="app-shell hidden">
+
+  <!-- ══════════════════════
+       SIDEBAR
+       ══════════════════════ -->
+  <aside class="sidebar" id="app-sidebar">
+
+    <div class="sb-header">
+      <div class="sb-logo">👥</div>
+      <div>
+        <div class="sb-brand-name">
+          EMS Portal
+          <small>Employee Management</small>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+
+      <div class="sb-group">
+        <div class="sb-group-label">Main</div>
+
+        <a class="sb-link" data-page="dashboard" href="#"
+           onclick="navigateTo('dashboard');return false;">
+          <span class="sb-icon">📊</span>
+          Dashboard
+        </a>
+
+        <a class="sb-link" data-page="employees" href="#"
+           onclick="navigateTo('employees');return false;">
+          <span class="sb-icon">👤</span>
+          Employees
+          <span class="sb-badge" id="sidebar-emp-count">0</span>
+        </a>
+
+        <a class="sb-link" data-page="add" href="#"
+           onclick="navigateTo('add');return false;">
+          <span class="sb-icon">➕</span>
+          Add Employee
+        </a>
+      </div>
+
+      <div class="sb-group">
+        <div class="sb-group-label">Account</div>
+        <a class="sb-link" href="#" onclick="Auth.logout();return false;">
+          <span class="sb-icon">🚪</span>
+          Sign Out
+        </a>
+      </div>
+
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar-char">A</div>
+        <div>
+          <div class="sb-user-name" id="sb-user-name">HR Administrator</div>
+          <div class="sb-user-role">Administrator</div>
+        </div>
+      </div>
+      <button class="btn-sb-logout" onclick="Auth.logout()">
+        🚪 Sign Out
+      </button>
+    </div>
+
+  </aside><!-- /.sidebar -->
+
+  <!-- ══════════════════════
+       MAIN AREA
+       ══════════════════════ -->
+  <div class="main-area">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <!-- Mobile hamburger -->
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <div>
+          <div class="topbar-page-title" id="topbar-title">Dashboard</div>
+          <div class="topbar-crumb"      id="topbar-crumb">Home › Dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="navigateTo('add')">
+          ➕ Add Employee
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic view content is injected here by views.js -->
+    <div class="page-content" id="main-view-root">
+      <!-- Views render here -->
+    </div>
+
+  </div><!-- /.main-area -->
+
+</div><!-- /#app-page -->
+
+<!-- ════════════════════════════════════════════════════════════
+     SCRIPTS — order matters!
+     data.js  → constants + DB layer
+     ui.js    → Toast, Modal, Validator, helpers
+     router.js→ navigateTo()
+     views.js → Views.*
+     app.js   → Auth + bootstrap
+     ════════════════════════════════════════════════════════════ -->
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/router.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
